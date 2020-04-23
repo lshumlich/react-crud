@@ -1,0 +1,4 @@
+.clList li:hover {
+    transform: scale(1.05);
+    color: rgba(204, 226, 212, 0.972);
+}
