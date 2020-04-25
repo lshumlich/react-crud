@@ -1,50 +1,60 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './PersonForm.css';
 
 function PersonForm(props) {
-    const [person, setPerson] = useState(props.person);
-
-    function onChange(e) {
-        const el = e.target;
-        console.log('---- changing:', el.name, el.value);
-        setPerson(xxx => ({ ...xxx, [el.name]: el.value }));
-        console.log(person);
-    }
+    const person = props.person;
 
     function onSave(e) {
-        props.save(person);
+        
+        const personToSave = {};
+        personToSave.key = person.key;
+        const idpersonform = document.getElementById('idpersonform');
+        const inputs = idpersonform.getElementsByTagName('input');
+
+        for(let i = 0; i < inputs.length; i++) {
+            personToSave[inputs[i].name] = inputs[i].value;
+        }
+
+        if(personToSave.fname) {
+            props.save(personToSave);
+        } else {
+            console.log('fname can not be blank');
+        }
+        e.preventDefault();
     }
 
     function onCancel(e) {
         props.cancel(person);
+        e.preventDefault();
     }
     
     return (
         <div>
+            <form id="idpersonform" onSubmit={onSave}>
             <h1>Hello From Person Form</h1>
             <div className="form-group">
                 <label>First Name</label>
-                <input name="fname" value={person.fname} data-testid="fname" className="input-control" onChange={onChange}/>
+                <input name="fname" defaultValue={person.fname} className="input-control"/>
 
                 <label className="right-inline">Last Name</label>
-                <input name="lname" id="lastName" value={person.lname} className="input-control" onChange={onChange}/>
+                <input name="lname" defaultValue={person.lname} className="input-control"/>
             </div>
 
             <div className="form-group">
                 <label>Company</label>
-                <input name="company" value={person.company} className="input-control" onChange={onChange}/>
+                <input name="company" defaultValue={person.company} className="input-control"/>
             </div>
 
             <div className="form-group">
                 <label>Address</label>
-                <textarea name="address" value={person.address} className="input-control" onChange={onChange}/>
+                <textarea name="address" defaultValue={person.address} className="input-control"/>
             </div>
 
             <div className="form-group">
                 <label>City,Prov,Post</label>
-                <input name="city" value={person.city} className="input-control" onChange={onChange} style={{ flex: "6" }} />
-                <input name="prov" value={person.prov} className="input-control" onChange={onChange} style={{ flex: "1" }} />
-                <input name="post" value={person.post} className="input-control" onChange={onChange} style={{ flex: "2" }} />
+                <input name="city" defaultValue={person.city} className="input-control" style={{ flex: "6" }} />
+                <input name="prov" defaultValue={person.prov} className="input-control" style={{ flex: "1" }} />
+                <input name="post" defaultValue={person.post} className="input-control" style={{ flex: "2" }} />
             </div>
 
             <div className="form-group">
@@ -52,7 +62,7 @@ function PersonForm(props) {
                 <button onClick={onSave}>Save</button>
                 <button onClick={onCancel}>Cancel</button>
             </div>
-
+            </form>
         </div>
     )
 }

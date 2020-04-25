@@ -4,106 +4,113 @@ import { fireEvent, render, screen, act } from '@testing-library/react';
 import funcs from "../business/functions";
 import PersonForm from './PersonForm';
 
-test('test plumbing 1', async () => {
-    let x1;
+test('test the basic PersonForm', async () => {
     /*
         create a mock function to simulate the save and cancel
         https://jestjs.io/docs/en/mock-functions
     */
     const mockSaveCallback = jest.fn();
+    const mockCancelCallback = jest.fn();
 
-    // create a People controler
+    // create a People controller and a new person
     const peopleCtrl = new funcs.People()
     const person = peopleCtrl.getNewPerson();
+
+    // default a few values
     person.fname = 'Larry';
     person.lname = 'Shumlich';
 
-    // Documentation and sample debug code
-    // https://testing-library.com/docs/dom-testing-library/api-queries
-    // screen.debug();
-    // let value = document.querySelector("[name=lname]");
-    // screen.debug(value);
+    // Render the form
+    render(<PersonForm person={person} save={mockSaveCallback} cancel={mockCancelCallback}/>);
+    // screen.debug()
 
-    act(() => {
-        // Render the form
-        render(<PersonForm person={person} save={mockSaveCallback} />);
+    // Did the names render correctly
+    expect(getValue('fname')).toBe('Larry');
+    expect(getValue('lname')).toBe('Shumlich');
 
-        // Change the first name
-        fireEvent.change(
-            screen.querySelector("[name=fname]"),
-            { target: { value: 'Lorraine' } }
-        );
+    // Update a few values on the form
+    updateValue('fname', 'Lorraine');
+    updateValue('lname', 'Shumy');
+    updateValue('company', 'LM');
 
-        // ************ Roman Big Note: I can not get the second change to work. I have tried everything...
-        // Change the last name
-        fireEvent.change(
-            document.querySelector("[name=lname]"),
-            { target: { value: 'Shumy' } }
-        );
-
-        // Trigger a save
-        fireEvent.click(
-            screen.getByText("Save")
-        );
-    });
+    // Trigger a save
+    fireEvent.click(
+        screen.getByText("Save")
+    );
 
     // The save mock should have been called once
     expect(mockSaveCallback.mock.calls.length).toBe(1);
 
-    // Grab the parm sent to the mock save object
+    // Grab the first parm sent to the mock save object (which should be the person to save)
     const savePerson = mockSaveCallback.mock.calls[0][0];
+
     // console.log(savePerson);
     expect(savePerson.fname).toBe('Lorraine');
     expect(savePerson.lname).toBe('Shumy');
+    expect(savePerson.company).toBe('LM');
 
-    let value = document.querySelector("[name=lname]");
-    screen.debug(value);
-    console.log(value.value);
+    // Trigger a cancel
+    fireEvent.click(
+        screen.getByText("Cancel")
+    );
+    // The cancel mock should have been called once
+    expect(mockCancelCallback.mock.calls.length).toBe(1);
 
 });
-/*
-    This was a just play test
-*/
-test('from the book', async () => {
+
+
+test('test all the attriutes for the basic PersonForm', async () => {
+    const dummyData = {
+        fname: 'fnamexx',
+        lname: 'lnamexx',
+        company: 'companyxx',
+        address: 'addressxx',
+        city: 'cityxx',
+        prov: 'provxx',
+        post: 'postxx',
+    };
+
     const mockSaveCallback = jest.fn();
-    // create a People controler
-    const peopleCtrl = new funcs.People()
-    const person = peopleCtrl.getNewPerson();
-    render(<PersonForm person={person} save={mockSaveCallback} />);
 
-    let input = screen.getByTestId('fname');
-    // let input = screen.getByRole("[name=lname]");
-    // let input = document.querySelector("[name=lname]");
-    // let input = document.querySelector("[name=lname]");
-    // screen.debug(input);
+    // create a People controller and a new person
+    // const peopleCtrl = new funcs.People()
+    // const person = peopleCtrl.getNewPerson();
+    const person = {};
+    for (let k in dummyData) {
+        person[k] = dummyData[k];
+    }
 
-    // // const { input } = setup()
-    // fireEvent.change(input, { target: { value: '23' } })
-    // screen.debug(input);
-    // // expect(input.value).toBe('23') // need to make a change so React registers "" as a change
-    // act(() => {
+    // Render the form
+    render(<PersonForm person={person} save={mockSaveCallback}/>);
+    // screen.debug()
 
-    //     // rerender(<PersonForm person={person} save={mockSaveCallback} />);
-    // Only the first one works. 
-    await fireEvent.change(input, { target: { value: 'Shumy1' } })
-    await fireEvent.change(input, { target: { value: 'Shumy2' } })
-    await fireEvent.change(input, { target: { value: 'Shumy3' } })
-    await fireEvent.change(input, { target: { value: 'Shumy4' } })
-    //     screen.debug(input);
-    // });
-    // // expect(input.value).toBe('Shumy') // need to make a change so React registers "" as a change
-    // // fireEvent.change(input, { target: { value: '' } })
-    // // expect(input.value).toBe('')
-    // // The save mock should have been called once
-    // fireEvent.click(
-    //     screen.getByText("Save")
-    // );
-    // expect(mockSaveCallback.mock.calls.length).toBe(1);
+    // make sure every field rendored correctly
+    for (let k in dummyData) {
+        expect(dummyData[k]).toBe(getValue(k));
+    }
+    // screen.debug()
+    
+    // Trigger a save
+    fireEvent.click(
+        screen.getByText("Save")
+    );
 
-    // // Grab the parm sent to the mock save object
-    // const savePerson = mockSaveCallback.mock.calls[0][0];
+    // Grab the first parm sent to the mock save object (which should be the person to save)
+    const savePerson = mockSaveCallback.mock.calls[0][0];
     // console.log(savePerson);
-    let input1 = document.querySelector("[name=lname]");
-    screen.debug(input1);
-})
 
+    for (let k in savePerson) {
+        expect(savePerson[k]).toBe(dummyData[k]);
+    }
+});
+
+/*
+    utility functions to save tons of code
+*/
+function getValue(name) {
+    return document.querySelector(`[name=${name}]`).value;
+}
+
+function updateValue(name, value) {
+    document.querySelector(`[name=${name}]`).value = value;
+}
