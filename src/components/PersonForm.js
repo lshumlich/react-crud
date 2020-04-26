@@ -4,8 +4,16 @@ import './PersonForm.css';
 function PersonForm(props) {
     const person = props.person;
 
+    function focusElement(name) {
+        const el = document.querySelector(`[name=${name}]`);
+        el.focus();
+        el.select();
+}
+    
+
     function onSave(e) {
         
+        // Get all the input values into a person object to save
         const personToSave = {};
         personToSave.key = person.key;
         const idpersonform = document.getElementById('idpersonform');
@@ -15,11 +23,24 @@ function PersonForm(props) {
             personToSave[inputs[i].name] = inputs[i].value;
         }
 
-        if(personToSave.fname) {
+        // Do some simple validation
+        try {
+            if(!personToSave.fname)  {
+                focusElement('fname');
+                throw new Error('First name can not be blank');
+            }
+            if(!personToSave.lname) {
+                focusElement('lname');
+                throw new Error('Last name can not be blank');
+            }
+
             props.save(personToSave);
-        } else {
-            console.log('fname can not be blank');
+            props.userMsg("Saved","status");
+        } catch (e) {
+            // console.log(e);
+            props.userMsg(e.message, "error");
         }
+
         e.preventDefault();
     }
 

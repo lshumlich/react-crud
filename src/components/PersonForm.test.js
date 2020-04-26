@@ -6,11 +6,12 @@ import PersonForm from './PersonForm';
 
 test('test the basic PersonForm', async () => {
     /*
-        create a mock function to simulate the save and cancel
+        create a mock function to simulate the save, cancel, and userMsg
         https://jestjs.io/docs/en/mock-functions
     */
     const mockSaveCallback = jest.fn();
     const mockCancelCallback = jest.fn();
+    const mockUserMsgCallback = jest.fn();
 
     // create a People controller and a new person
     const peopleCtrl = new funcs.People()
@@ -21,7 +22,12 @@ test('test the basic PersonForm', async () => {
     person.lname = 'Shumlich';
 
     // Render the form
-    render(<PersonForm person={person} save={mockSaveCallback} cancel={mockCancelCallback}/>);
+    render(<PersonForm 
+        person={person} 
+        save={mockSaveCallback} 
+        cancel={mockCancelCallback}
+        userMsg={mockUserMsgCallback}
+        />);
     // screen.debug()
 
     // Did the names render correctly
@@ -34,9 +40,7 @@ test('test the basic PersonForm', async () => {
     updateValue('company', 'LM');
 
     // Trigger a save
-    fireEvent.click(
-        screen.getByText("Save")
-    );
+    click('Save');
 
     // The save mock should have been called once
     expect(mockSaveCallback.mock.calls.length).toBe(1);
@@ -50,16 +54,15 @@ test('test the basic PersonForm', async () => {
     expect(savePerson.company).toBe('LM');
 
     // Trigger a cancel
-    fireEvent.click(
-        screen.getByText("Cancel")
-    );
+    click('Cancel');
+
     // The cancel mock should have been called once
     expect(mockCancelCallback.mock.calls.length).toBe(1);
 
 });
 
 
-test('test all the attriutes for the basic PersonForm', async () => {
+test('test all the attriutes render and are saved for the basic PersonForm', async () => {
     const dummyData = {
         fname: 'fnamexx',
         lname: 'lnamexx',
@@ -71,17 +74,19 @@ test('test all the attriutes for the basic PersonForm', async () => {
     };
 
     const mockSaveCallback = jest.fn();
+    const mockUserMsgCallback = jest.fn();
 
-    // create a People controller and a new person
-    // const peopleCtrl = new funcs.People()
-    // const person = peopleCtrl.getNewPerson();
     const person = {};
     for (let k in dummyData) {
         person[k] = dummyData[k];
     }
 
     // Render the form
-    render(<PersonForm person={person} save={mockSaveCallback}/>);
+    render(<PersonForm 
+        person={person} 
+        save={mockSaveCallback} 
+        userMsg={mockUserMsgCallback}
+        />);
     // screen.debug()
 
     // make sure every field rendored correctly
@@ -91,17 +96,53 @@ test('test all the attriutes for the basic PersonForm', async () => {
     // screen.debug()
     
     // Trigger a save
-    fireEvent.click(
-        screen.getByText("Save")
-    );
+    click('Save');
 
-    // Grab the first parm sent to the mock save object (which should be the person to save)
+    // Grab the first parm sent to the mock save object 
+    //    (which should be the person to save)
     const savePerson = mockSaveCallback.mock.calls[0][0];
-    // console.log(savePerson);
 
+    // console.log(savePerson);
     for (let k in savePerson) {
         expect(savePerson[k]).toBe(dummyData[k]);
     }
+});
+
+
+test('test validation works', async () => {
+
+    const person = {};
+    const mockSaveCallback = jest.fn();
+    const mockUserMsgCallback = jest.fn();
+
+    // Render the form
+    render(<PersonForm 
+        person={person} 
+        save={mockSaveCallback}
+        userMsg={mockUserMsgCallback}
+        />);
+    // screen.debug()
+    
+    // Trigger a save to see what errors we get
+    click('Save');
+
+    // Should not have done a save
+    expect(mockSaveCallback.mock.calls.length).toBe(0);
+    // Should have sent a message to the user
+    expect(mockUserMsgCallback.mock.calls.length).toBe(1);
+    expect(mockUserMsgCallback.mock.calls[0][0]).toMatch(/first name/i);
+
+    updateValue('fname', 'xxx');
+    click('Save');
+    expect(mockUserMsgCallback.mock.calls.length).toBe(2);
+    expect(mockUserMsgCallback.mock.calls[1][0]).toMatch(/last name/i);
+
+    updateValue('lname', 'xxx');
+    click('Save');
+    expect(mockSaveCallback.mock.calls.length).toBe(1);
+    expect(mockUserMsgCallback.mock.calls.length).toBe(3);
+    expect(mockUserMsgCallback.mock.calls[2][0]).toMatch(/saved/i);
+
 });
 
 /*
@@ -113,4 +154,10 @@ function getValue(name) {
 
 function updateValue(name, value) {
     document.querySelector(`[name=${name}]`).value = value;
+}
+
+function click (txt) {
+    fireEvent.click(
+        screen.getByText(txt)
+    );
 }

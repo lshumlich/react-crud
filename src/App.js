@@ -12,17 +12,21 @@ function App() {
   const [peopleCtrl, setPeopleCtrl] = useState();
   const [person, setPerson] = useState();
   const [loading, setLoading] = useState();
-  const [message, setMessage] = useState();
-  const [messageClass, setMessageClass] = useState();
+  const [message, setMessage] = useState({text:"", class:""});
   const [toShow, setToShow] = useState();
 
   useEffect(() => {
+    // This effect will run any time a state variable changes
     // console.log('----useEffect: general');
   });
 
-  // This will only run once
+  /*
+    This will only run once because the second parm to
+    useEffect is what to monitor. In this case it is an emply
+    array. The empty array will never change
+  */
+
   useEffect(() => {
-    // console.log('----useEffect: arePeopleLoaded');
     //
     // Load the people from the API only the first time
     //
@@ -34,9 +38,9 @@ function App() {
         setPeopleCtrl(peeps);
         await peeps.getPeople();
         setToShow('list');
+        userMsg("People Loaded", "status");
       } catch (e) {
-        setMessage("***** Turn the server on dummy! *****");
-        console.log("***** We have not turned the server on *****");
+        userMsg("***** Turn the server on dummy! *****", "error");
         console.log(e);
       } finally {
         endLoadingAnimation();
@@ -44,15 +48,6 @@ function App() {
     }
     fetchData();
   }, []);
-
-  useEffect(() => {
-    // console.log('----useEffect: message', message);
-    if (message) {
-      setMessageClass('clWarn');
-    } else {
-      setMessageClass('');
-    }
-  }, [message]);
 
   async function onLoadingButton() {
 
@@ -80,22 +75,28 @@ function App() {
 
   function onCancel(person) {
     setToShow('list');
+    userMsg();
   }
 
   // Add a new person to the list
   const onAdd = () => {
-    // console.log("App onAdd", peopleCtrl);
     setPerson(peopleCtrl.getNewPerson());
     setToShow('form');
+    userMsg();
   }
 
   // Show an item from the PeopleList
   function onShow(key) {
     setPerson(peopleCtrl.get(key));
     setToShow('form');
+    userMsg();
   }
 
-  // console.log("Just before return in App");
+  function userMsg(msg, type) {
+    // set the class based on the type of message
+    const cls = (type) ? 'cl' + type : 'clstatus';
+    setMessage({text:msg, class: cls});
+  }
 
   let output;
   if (toShow === "list") {
@@ -111,6 +112,7 @@ function App() {
         person={person}
         cancel={onCancel}
         save={onSave}
+        userMsg={userMsg}
       />
   }
 
@@ -129,7 +131,7 @@ function App() {
         >
           Learn React
         </a>
-        <div className={messageClass}>{message}</div>
+        <div className={message.class}>{message.text}</div>
       </header>
       <main className="App-main">
         {output}
