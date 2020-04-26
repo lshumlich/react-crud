@@ -14,7 +14,7 @@ function PeopleList(props) {
     }
 
     function onClick(e) {
-        props.showone(e.target.getAttribute("mykey"));
+        props.showOne(e.target.getAttribute("mykey"));
     }
 
     const onAdd = () => {

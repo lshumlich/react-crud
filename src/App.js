@@ -17,7 +17,7 @@ function App() {
 
   useEffect(() => {
     // This effect will run any time a state variable changes
-    // console.log('----useEffect: general');
+    console.log('----useEffect: general');
   });
 
   /*
@@ -26,11 +26,11 @@ function App() {
     array. The empty array will never change
   */
 
-  useEffect(() => {
+  useEffect( () => {
     //
     // Load the people from the API only the first time
     //
-    // console.log("Loading People once we hope.");
+    console.log("Loading People once we hope.");
     async function fetchData() {
       try {
         startLoadingAnimation();
@@ -39,6 +39,7 @@ function App() {
         await peeps.getPeople();
         setToShow('list');
         userMsg("People Loaded", "status");
+        console.log('Data should be loaded');
       } catch (e) {
         userMsg("***** Turn the server on dummy! *****", "error");
         console.log(e);
@@ -47,6 +48,7 @@ function App() {
       }
     }
     fetchData();
+    
   }, []);
 
   async function onLoadingButton() {
@@ -103,7 +105,7 @@ function App() {
     output =
       <PeopleList
         people={peopleCtrl.people}
-        showone={onShow}
+        showOne={onShow}
         onAdd={onAdd}
       />
   } else if (toShow === "form") {
