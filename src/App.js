@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import PersonForm from './components/PersonForm';
+import PeopleListClass from './components/PeopleListClass';
 import PeopleList from './components/PeopleList';
 import LoadingBalls from './components/LoadingBalls'
 import funcs from "./business/functions";
@@ -12,8 +13,9 @@ function App() {
   const [peopleCtrl, setPeopleCtrl] = useState();
   const [person, setPerson] = useState();
   const [loading, setLoading] = useState();
-  const [message, setMessage] = useState({text:"", class:""});
+  const [message, setMessage] = useState({ text: "", class: "" });
   const [toShow, setToShow] = useState();
+  const [isClass, setIsClass] = useState(false);
 
   useEffect(() => {
     // This effect will run any time a state variable changes
@@ -26,7 +28,7 @@ function App() {
     array. The empty array will never change
   */
 
-  useEffect( () => {
+  useEffect(() => {
     //
     // Load the people from the API only the first time
     //
@@ -48,7 +50,7 @@ function App() {
       }
     }
     fetchData();
-    
+
   }, []);
 
   async function onLoadingButton() {
@@ -97,51 +99,71 @@ function App() {
   function userMsg(msg, type) {
     // set the class based on the type of message
     const cls = (type) ? 'cl' + type : 'clstatus';
-    setMessage({text:msg, class: cls});
+    setMessage({ text: msg, class: cls });
+  }
+
+  function onIsClass(e) {
+    setIsClass(isClass ? false : true);
+    console.log("onIsClass", isClass);
   }
 
   let output;
-  if (toShow === "list") {
+  if (isClass) {
     output =
-      <PeopleList
-        people={peopleCtrl.people}
-        showOne={onShow}
-        onAdd={onAdd}
-      />
-  } else if (toShow === "form") {
-    output =
-      <PersonForm
-        person={person}
-        cancel={onCancel}
-        save={onSave}
-        userMsg={userMsg}
-      />
+      <PeopleListClass />
+    console.log('should use class version');
+  } else {
+    console.log('should use function version');
+    if (toShow === "list") {
+      output =
+        <PeopleList
+          people={peopleCtrl.people}
+          showOne={onShow}
+          onAdd={onAdd}
+        />
+    } else if (toShow === "form") {
+      output =
+        <PersonForm
+          person={person}
+          cancel={onCancel}
+          save={onSave}
+          userMsg={userMsg}
+        />
+    }
   }
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
+    return (
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <p>
+            Edit <code>src/App.js</code> and save to reload.
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
+          <a
+            className="App-link"
+            href="https://reactjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn React
         </a>
-        <div className={message.class}>{message.text}</div>
-      </header>
-      <main className="App-main">
-        {output}
-        {loading}
-        <span className="clEgg" onClick={onLoadingButton}>...</span>
-      </main>
-    </div>
-  );
-}
+          <div className={message.class}>{message.text}</div>
+        </header>
+        <main className="App-main">
+          {output}
+          {loading}
+          <div>
+            <span className="clEgg" onClick={onLoadingButton}>...</span>
+            <label>
+              Class
+            <input name="isClass" type="checkbox" checked={isClass} onChange={onIsClass} />
+            </label>
+            <button>Class</button>
+            <button>Class</button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
-export default App;
+  export default App;
